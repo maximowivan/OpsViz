@@ -5,8 +5,10 @@
 
 ## Запуск без сборки (portable)
 
-Папка `01-portable` в раздаче: `OpsViz.exe` + `ExcelDataReader.dll` + `OpsViz.exe.config`.
-Установка не нужна. Требование: **.NET Framework 4.8** (входит в Windows 10 1903+).
+Готовые сборки — на вкладке **Releases** (`OpsViz-portable-v*.zip`:
+`OpsViz.exe` + `ExcelDataReader.dll` + `OpsViz.exe.config` + `README.txt`).
+Распаковать и запустить, установка не нужна.
+Требование: **.NET Framework 4.8** (входит в Windows 10 1903+).
 
 Проверка версии: заголовок окна `Схема потоков операций v1.1.xxxx.xxxxx`.
 
