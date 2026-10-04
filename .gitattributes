@@ -1,0 +1,12 @@
+* text=auto
+*.cs text diff=csharp
+*.xaml text
+*.csproj text
+*.sln text eol=crlf
+*.config text
+*.settings text eol=crlf
+*.resx text eol=crlf
+*.dll binary
+*.exe binary
+*.pdb binary
+*.suo binary

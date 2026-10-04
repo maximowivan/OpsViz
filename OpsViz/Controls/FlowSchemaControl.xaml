@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="OpsViz.Controls.FlowSchemaControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="#F7F8FA">
+        <Border x:Name="Host" Background="#F7F8FA" ClipToBounds="True" Cursor="SizeAll">
+            <Canvas x:Name="Cv" Background="Transparent"/>
+        </Border>
+        <Border x:Name="Placeholder" IsHitTestVisible="False"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="10" Padding="28,20">
+            <StackPanel>
+                <TextBlock Text="Нет данных для схемы" FontSize="15" FontWeight="SemiBold"
+                           Foreground="#1E293B" HorizontalAlignment="Center"/>
+                <TextBlock Text="Обновите из базы, откройте файл или покажите скрытые объекты"
+                           FontSize="12" Foreground="#64748B" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

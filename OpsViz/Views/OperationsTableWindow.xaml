@@ -1,0 +1,90 @@
+<Window x:Class="OpsViz.Views.OperationsTableWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Все операции" Height="700" Width="1250" WindowStartupLocation="CenterOwner">
+    <DockPanel Background="{StaticResource BBg}">
+        <Border DockPanel.Dock="Top" Background="{StaticResource BPanel}" BorderBrush="{StaticResource BBorder}" BorderThickness="0,0,0,1" Padding="10,7">
+            <WrapPanel VerticalAlignment="Center">
+                <TextBlock Text="Фильтр:" VerticalAlignment="Center" Foreground="{StaticResource BMuted}"/>
+                <TextBox x:Name="FilterBox" Width="220" Margin="4,0,12,0" ToolTip="Быстрый фильтр по названиям, продуктам, тегам, UID"/>
+                <Button Content="Пометить" Click="BtnMark_Click" Padding="10,5" ToolTip="Выделить выбранные строки желтым (повторно — снять). Выбор нескольких: Ctrl+клик, Shift+клик"/>
+                <ToggleButton x:Name="MarkedOnlyBtn" Content="Только помеченные" Padding="10,5" Margin="6,0,0,0" Checked="MarkedOnly_Changed" Unchecked="MarkedOnly_Changed" ToolTip="Показать только помеченные желтым операции"/>
+                <TextBlock x:Name="CountText" VerticalAlignment="Center" Foreground="{StaticResource BMuted}" Margin="12,0,0,0"/>
+            </WrapPanel>
+        </Border>
+        <DataGrid x:Name="OpsGrid" ItemsSource="{Binding AllOps}" AutoGenerateColumns="False" IsReadOnly="True"
+                  FontSize="11" HeadersVisibility="Column" CanUserSortColumns="True"
+                  SelectionMode="Extended" SelectionUnit="FullRow"
+                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                  EnableColumnVirtualization="True"
+                  ClipboardCopyMode="IncludeHeader" MouseDoubleClick="OpsGrid_DoubleClick">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow" BasedOn="{StaticResource BaseRowStyle}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Diverged}" Value="True">
+                            <Setter Property="Background" Value="#FDE6E6"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Marked}" Value="True">
+                            <Setter Property="Background" Value="#FFF3B0"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Перейти к связи на схеме" Click="Goto_Click" FontWeight="Bold"/>
+                    <MenuItem Header="Пометить / снять пометку" Click="BtnMark_Click"/>
+                    <MenuItem Header="Копировать ячейку" Click="CopyCell_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Название источника" Width="*" MinWidth="120" SortMemberPath="SourceName">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding SourceName, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" ToolTip="{Binding SourceName}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Название приемника" Width="*" MinWidth="120" SortMemberPath="ReceiverName">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding ReceiverName, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" ToolTip="{Binding ReceiverName}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Начало" Binding="{Binding Start, StringFormat={}{0:dd.MM.yy HH:mm}}" Width="95" SortMemberPath="Start"/>
+                <DataGridTextColumn Header="Конец" Binding="{Binding End, StringFormat={}{0:dd.MM.yy HH:mm}}" Width="95" SortMemberPath="End"/>
+                <DataGridTextColumn Header="Прод.ист" Binding="{Binding SourceProduct}" Width="100"/>
+                <DataGridTextColumn Header="Прод.при" Binding="{Binding ReceiverProduct}" Width="100"/>
+                <DataGridTextColumn Header="Масса ист." Binding="{Binding SourceMass, StringFormat='{}{0:#,0.##}'}" Width="80"/>
+                <DataGridTextColumn Header="Масса при." Binding="{Binding ReceiverMass, StringFormat='{}{0:#,0.##}'}" Width="80"/>
+                <DataGridTemplateColumn Header="Тег ист." Width="130" SortMemberPath="SourceTag">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding SourceTag, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" ToolTip="{Binding SourceTag}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Тег при." Width="130" SortMemberPath="ReceiverTag">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding ReceiverTag, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" Padding="0" ToolTip="{Binding ReceiverTag}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="UID" Binding="{Binding Uid}" Width="80"/>
+                <DataGridTextColumn Header="Смены" Binding="{Binding ShiftMasses}" Width="90">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="ToolTip" Value="{Binding ShiftMasses}"/>
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Руч.ист" Binding="{Binding ManualSourceMass, StringFormat='{}{0:#,0.##}'}" Width="70"/>
+                <DataGridTextColumn Header="Руч.при" Binding="{Binding ManualReceiverMass, StringFormat='{}{0:#,0.##}'}" Width="70"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>

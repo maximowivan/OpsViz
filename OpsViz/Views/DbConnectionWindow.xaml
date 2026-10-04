@@ -1,0 +1,32 @@
+<Window x:Class="OpsViz.Views.DbConnectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Подключение к базе операций" Width="600" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <StackPanel Margin="14">
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Строка подключения к I-OMS нужна один раз — дальше хранится локально и больше не спрашивается. Только чтение: программа выполняет один SELECT-запрос, изменить или положить базу она не может."/>
+        <TextBlock FontWeight="SemiBold" Margin="0,10,0,4" Text="Где взять строку (на рабочей машине, один раз):"/>
+        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource BMuted}" Text="В Excel нажать Alt+F11, затем Ctrl+G и выполнить строчку ниже. Результат скопировать сюда:"/>
+        <Border Background="#F1F5F9" BorderBrush="{StaticResource BBorder}" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,6,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="SnippetBox" IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                         TextWrapping="Wrap" FontFamily="Consolas" FontSize="11"
+                         Text='?"Provider=SQLOLEDB;" + Servers("10.1.1.30").PIModuleDB.PIModules("%InduSoft\I-OMS").PIProperties.Item("Settings").PIProperties.Item("UserPreferences").PIProperties.Item("Common").PIProperties.Item("StoreTransfers").PIProperties.Item("ConnectionStringForStoreTransfers").Value'/>
+                <Button Grid.Column="1" Content="Копировать" Click="BtnCopySnippet_Click" Padding="8,4" Margin="8,0,0,0" VerticalAlignment="Top"/>
+            </Grid>
+        </Border>
+        <TextBlock FontWeight="SemiBold" Margin="0,10,0,4" Text="Строка подключения:"/>
+        <TextBox x:Name="ConnBox" MinHeight="52" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                 ToolTip="Вставьте сюда результат из Excel. Префикс Provider= программа уберет сама."/>
+        <TextBlock x:Name="StatusText" Margin="0,6,0,0" TextWrapping="Wrap" Visibility="Collapsed"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Проверить" Click="BtnTest_Click" Padding="12,5" Margin="0,0,8,0" ToolTip="Проверить подключение прямо сейчас, ничего не загружая"/>
+            <Button Content="OK" Click="BtnOk_Click" Padding="20,5" Margin="0,0,8,0" Style="{StaticResource AccentButton}"/>
+            <Button Content="Отмена" Click="BtnCancel_Click" Padding="12,5"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
