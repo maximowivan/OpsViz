@@ -3,5 +3,4 @@ obj/
 .vs/
 *.user
 *.suo
-*.pdb
-TestResults/
+OpsViz-portable/

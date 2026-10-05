@@ -47,11 +47,6 @@ namespace OpsViz.Views
             Schema.OnlyRequested += (n, chain) => _vm.ShowOnlyNode(n, chain);
             Schema.FocusRequested += n => _vm.FocusNode(n);
             _vm.GotoEdge += e => { Schema.CenterOn(e); this.Activate(); };
-            _vm.PromptConnection += () =>
-            {
-                var dlg = new DbConnectionWindow(null) { Owner = this };
-                return dlg.ShowDialog() == true ? dlg.ConnectionString : null;
-            };
 
             IncomingList.SelectionChanged += (s, e) => SelectOpRow(IncomingList.SelectedItem);
             OutgoingList.SelectionChanged += (s, e) => SelectOpRow(OutgoingList.SelectedItem);

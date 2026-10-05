@@ -70,9 +70,6 @@
     <Compile Include="Views\OperationsTableWindow.xaml.cs">
       <DependentUpon>OperationsTableWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DbConnectionWindow.xaml.cs">
-      <DependentUpon>DbConnectionWindow.xaml</DependentUpon>
-    </Compile>
     <Page Include="Controls\FlowSchemaControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -92,10 +89,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OperationsTableWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\DbConnectionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -14,6 +14,11 @@ namespace OpsViz.Import
     {
         public const int CommandTimeoutSec = 200;
 
+        // Проверенная на предприятии строка (Windows-авторизация, пароля нет).
+        // Файл %AppData%\OpsViz\sql.txt при наличии перекрывает ее.
+        public const string DefaultConnectionString =
+            "Data Source=PISQL3;Initial Catalog=iomsdb;Integrated Security=SSPI";
+
         public static void TestConnection(string connectionString)
         {
             using (var c = new SqlConnection(connectionString))

@@ -159,11 +159,89 @@ namespace OpsViz.ViewModels
         DateTime? _dateTo;
         public DateTime? DateTo { get { return _dateTo; } set { if (Set(ref _dateTo, value)) Rebuild(); } }
 
+        // Время периода (операционные сутки начинаются в 12:00).
+        string _timeFromText = "12:00", _timeToText = "12:00";
+        TimeSpan _timeFromValid = new TimeSpan(12, 0, 0), _timeToValid = new TimeSpan(12, 0, 0);
+        public string TimeFromText
+        {
+            get { return _timeFromText; }
+            set
+            {
+                if (Set(ref _timeFromText, value))
+                {
+                    TimeSpan t;
+                    if (TryParseTime(_timeFromText, out t)) _timeFromValid = t;
+                    Rebuild();
+                }
+            }
+        }
+        public string TimeToText
+        {
+            get { return _timeToText; }
+            set
+            {
+                if (Set(ref _timeToText, value))
+                {
+                    TimeSpan t;
+                    if (TryParseTime(_timeToText, out t)) _timeToValid = t;
+                    Rebuild();
+                }
+            }
+        }
+
+        // Границы с учетом времени; null = дата не выбрана = без ограничения.
+        public DateTime? FilterFrom
+        {
+            get { return _dateFrom.HasValue ? _dateFrom.Value.Date + _timeFromValid : (DateTime?)null; }
+        }
+        public DateTime? FilterTo
+        {
+            get { return _dateTo.HasValue ? _dateTo.Value.Date + _timeToValid : (DateTime?)null; }
+        }
+
+        public static bool TryParseTime(string s, out TimeSpan t)
+        {
+            t = TimeSpan.Zero;
+            string[] parts = ((s ?? "").Trim().Replace('.', ':')).Split(':');
+            int h = 0, m = 0, sec = 0;
+            if (parts.Length == 1)
+            {
+                if (!int.TryParse(parts[0], out h)) return false;
+            }
+            else if (parts.Length == 2)
+            {
+                if (!int.TryParse(parts[0], out h) || !int.TryParse(parts[1], out m)) return false;
+            }
+            else if (parts.Length == 3)
+            {
+                if (!int.TryParse(parts[0], out h) || !int.TryParse(parts[1], out m) || !int.TryParse(parts[2], out sec)) return false;
+            }
+            else return false;
+            if (h < 0 || h > 23 || m < 0 || m > 59 || sec < 0 || sec > 59) return false;
+            t = new TimeSpan(h, m, sec);
+            return true;
+        }
+
+        // Операционные сутки как в скрипте (кнопка «текущие сутки»):
+        // с 12:00:01 до +1 сутки. Если сейчас раньше 12:00 — вчерашние.
+        public static void OperativeDay(DateTime now, out DateTime from, out DateTime to)
+        {
+            DateTime start = now.Hour >= 12
+                ? now.Date.AddHours(12).AddSeconds(1)
+                : now.Date.AddDays(-1).AddHours(12).AddSeconds(1);
+            from = start;
+            to = start.AddDays(1);
+        }
+
         public void ResetFilters()
         {
             _selectedProduct = AllProducts; Raise(nameof(SelectedProduct));
             Set(ref _dateFrom, null, "DateFrom");
             Set(ref _dateTo, null, "DateTo");
+            _timeFromText = "12:00"; Raise(nameof(TimeFromText));
+            _timeToText = "12:00"; Raise(nameof(TimeToText));
+            _timeFromValid = new TimeSpan(12, 0, 0);
+            _timeToValid = new TimeSpan(12, 0, 0);
             Rebuild();
         }
 
@@ -399,35 +477,29 @@ namespace OpsViz.ViewModels
                 if (System.IO.File.Exists(p)) return SqlTransferLoader.NormalizeConnectionString(System.IO.File.ReadAllText(p));
             }
             catch { }
-            return null;
+            return SqlTransferLoader.DefaultConnectionString;
         }
 
         bool _dbBusy;
 
         public System.Windows.Input.ICommand UpdateFromDbCommand { get; private set; }
 
-        // Окно ввода строки подключения показывает View (у VM нет окон):
-        // MainWindow назначает этот колбэк при старте. Возвращает готовую
-        // нормализованную строку или null (отмена).
-        public System.Func<string> PromptConnection { get; set; }
-
-        // Кнопка «Обновить из базы»: тот же запрос, что скрипт выгрузки Excel,
-        // период берется из верхних фильтров (по умолчанию — вчера/сегодня).
-        // Выполняется в фоне, интерфейс не виснет (у скрипта таймаут 200с).
+        // Кнопка «Обновить из базы»: тот же запрос, что скрипт выгрузки Excel.
+        // Период: из верхних фильтров (дата+время); если даты не выбраны —
+        // текущие операционные сутки 12:00–12:00 как в скрипте; если выбрана
+        // только одна сторона — вторые сутки от нее. Выполняется в фоне,
+        // интерфейс не виснет (у скрипта таймаут 200с).
         async void UpdateFromDb()
         {
             if (_dbBusy) return;
             string cs = LoadDbConnectionString();
-            if (string.IsNullOrWhiteSpace(cs))
-            {
-                if (PromptConnection == null) return;
-                cs = PromptConnection();
-                if (string.IsNullOrWhiteSpace(cs)) return;
-                try { System.IO.File.WriteAllText(DbConnectionPath(), cs); }
-                catch (Exception ex) { MessageBox.Show("Не удалось сохранить строку:\n" + ex.Message, "OpsViz", MessageBoxButton.OK, MessageBoxImage.Warning); }
-            }
-            DateTime from = (_dateFrom ?? DateTime.Today.AddDays(-1)).Date;
-            DateTime to = (_dateTo ?? DateTime.Today).Date.AddDays(1).AddTicks(-1);
+            DateTime opFrom, opTo;
+            OperativeDay(DateTime.Now, out opFrom, out opTo);
+            DateTime from, to;
+            if (FilterFrom.HasValue && FilterTo.HasValue) { from = FilterFrom.Value; to = FilterTo.Value; }
+            else if (FilterFrom.HasValue) { from = FilterFrom.Value; to = from.Date.AddDays(1) + _timeToValid; }
+            else if (FilterTo.HasValue) { to = FilterTo.Value; from = to.Date.AddDays(-1) + _timeFromValid; }
+            else { from = opFrom; to = opTo; }
             _dbBusy = true;
             StatusText = "Загрузка из базы…";
             System.Windows.Input.Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
@@ -448,11 +520,11 @@ namespace OpsViz.ViewModels
             if (ops.Count == 0)
             {
                 MessageBox.Show("База вернула 0 операций за период " +
-                    from.ToString("dd.MM.yy") + " — " + to.ToString("dd.MM.yy") + ".",
+                    from.ToString("dd.MM.yy HH:mm") + " — " + to.ToString("dd.MM.yy HH:mm") + ".",
                     "OpsViz", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            FinishLoadOps(ops, "база " + from.ToString("dd.MM.yy") + "—" + to.ToString("dd.MM.yy"));
+            FinishLoadOps(ops, "база " + from.ToString("dd.MM.yy HH:mm") + "—" + to.ToString("dd.MM.yy HH:mm"));
         }
 
         public ObservableCollection<Operation> AllOps { get; } = new ObservableCollection<Operation>();
@@ -502,8 +574,8 @@ namespace OpsViz.ViewModels
                 MinMass = 0,
                 ProductFilter = _selectedProduct == AllProducts ? null : _selectedProduct,
                 Hidden = _hidden,
-                DateFrom = _dateFrom,
-                DateTo = _dateTo
+                DateFrom = FilterFrom,
+                DateTo = FilterTo
             };
             _graph = FlowGraph.Build(_ops, opt);
             RefreshDiverged();
@@ -635,8 +707,8 @@ namespace OpsViz.ViewModels
             {
                 PerOperation = true,
                 ProductFilter = _selectedProduct == AllProducts ? null : _selectedProduct,
-                DateFrom = _dateFrom,
-                DateTo = _dateTo,
+                DateFrom = FilterFrom,
+                DateTo = FilterTo,
                 Hidden = null
             };
             return FlowGraph.Build(_ops, fullOpt);

@@ -92,16 +92,16 @@ namespace OpsViz.Graph
                 kept = kept.Where(o => !opt.Hidden.Contains(o.SourceName) && !opt.Hidden.Contains(o.ReceiverName));
             if (opt.DateFrom.HasValue)
             {
-                var d = opt.DateFrom.Value.Date;
-                kept = kept.Where(o => o.Start > DateTime.MinValue && o.Start.Date >= d);
+                var d = opt.DateFrom.Value;
+                kept = kept.Where(o => o.Start > DateTime.MinValue && o.Start >= d);
             }
             if (opt.DateTo.HasValue)
             {
-                var d = opt.DateTo.Value.Date;
+                var d = opt.DateTo.Value;
                 // Как в SQL скрипта выгрузки: конец операции должен быть внутри
                 // периода (или операция еще открыта), иначе это уже другой период.
-                kept = kept.Where(o => o.Start > DateTime.MinValue && o.Start.Date <= d
-                    && (!o.End.HasValue || o.End.Value.Date <= d));
+                kept = kept.Where(o => o.Start > DateTime.MinValue && o.Start <= d
+                    && (!o.End.HasValue || o.End.Value <= d));
             }
             var list = kept.ToList();
 

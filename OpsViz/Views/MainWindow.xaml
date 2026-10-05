@@ -19,7 +19,7 @@
         <Border DockPanel.Dock="Top" Background="{StaticResource BPanel}" BorderBrush="{StaticResource BBorder}" BorderThickness="0,0,0,1" Padding="10,7">
             <WrapPanel VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                    <Button Style="{StaticResource AccentButton}" Command="{Binding UpdateFromDbCommand}" Padding="12,5" Margin="0,0,6,0" ToolTip="Выгрузить операции из InduSoft I-OMS напрямую (тот же запрос, что кнопка «Операции» в Excel). Период — из фильтров «с/по», по умолчанию вчера/сегодня. Строка подключения спросится один раз.">
+                    <Button Style="{StaticResource AccentButton}" Command="{Binding UpdateFromDbCommand}" Padding="12,5" Margin="0,0,6,0" ToolTip="Выгрузить операции из InduSoft I-OMS напрямую (тот же запрос, что кнопка «Операции» в Excel). Период — дата+время «с/по», по умолчанию текущие операционные сутки 12:00–12:00.">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -42,9 +42,11 @@
                     <TextBlock Text="Продукт:" VerticalAlignment="Center" Foreground="{StaticResource BMuted}"/>
                     <ComboBox x:Name="ProductCombo" ItemsSource="{Binding Products}" Width="150" Margin="4,0,8,0" ToolTip="Показать только операции с этим продуктом (по источнику или приемнику)"/>
                     <TextBlock Text="Период с:" VerticalAlignment="Center" Foreground="{StaticResource BMuted}"/>
-                    <DatePicker SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}" Width="105" Margin="4,0,6,0" ToolTip="Показать операции не раньше этой даты (по времени начала). Пусто — без ограничения."/>
+                    <DatePicker SelectedDate="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged}" Width="105" Margin="4,0,4,0" ToolTip="Дата начала периода. Пусто — без ограничения."/>
+                    <TextBox Text="{Binding TimeFromText, UpdateSourceTrigger=PropertyChanged}" Width="45" Margin="0,0,6,0" ToolTip="Время начала периода (ЧЧ:ММ). Операционные сутки начинаются в 12:00."/>
                     <TextBlock Text="по:" VerticalAlignment="Center" Foreground="{StaticResource BMuted}"/>
-                    <DatePicker SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}" Width="105" Margin="4,0,0,0" ToolTip="Показать операции не позже этой даты (по времени начала). Пусто — без ограничения."/>
+                    <DatePicker SelectedDate="{Binding DateTo, UpdateSourceTrigger=PropertyChanged}" Width="105" Margin="4,0,4,0" ToolTip="Дата конца периода. Пусто — без ограничения."/>
+                    <TextBox Text="{Binding TimeToText, UpdateSourceTrigger=PropertyChanged}" Width="45" Margin="0,0,0,0" ToolTip="Время конца периода (ЧЧ:ММ)."/>
                 </StackPanel>
                 <Separator Margin="0,0,10,0"/>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
